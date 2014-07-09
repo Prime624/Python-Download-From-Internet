@@ -1,4 +1,4 @@
-Python-Download-From-Internet
+Python Download From Internet
 =============================
 Both versions download images from internet and display them using Pygame.
 
