@@ -5,7 +5,7 @@ def main():##!!!!!! Need to transmit data over socket in chunks.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	s.connect(('',55556))
 	#s.send('bg')
-	#bps=s.recv(87040)
+	#bps=s.recv(4096)
 	#backgroundPic=pg.image.fromstring(bps[bps.index('QQQQQ')+5:],(int(bps[1:bps.index(',')]),int(bps[bps.index(' ')+1:bps.index(')')])),"RGBA")
 	s.send('pointer')
 	ps=s.recv(12288)
@@ -19,10 +19,10 @@ def main():##!!!!!! Need to transmit data over socket in chunks.
 	mouseP=(0,0)
 	point=(5000,5000)
 	seconds=False
-	#window = pg.display.set_mode((backgroundPic.get_rect().size[0],backgroundPic.get_rect().size[1]))
-	window = pg.display.set_mode((500,500))#DELETE_ME
+	window = pg.display.set_mode((backgroundPic.get_rect().size[0],backgroundPic.get_rect().size[1]))
+	#window = pg.display.set_mode((500,500))#DELETE_ME
 	while 1:
-		window.blit(backgroundPic,(0,0))
+		#window.blit(backgroundPic,(0,0))
 		window.blit(pointerPic,mouseP)
 		if seconds:
 			msgObj=font.render("It is {}".format(time.strftime("%H:%M:%S")), 1, pg.Color(0,0,0))
