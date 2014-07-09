@@ -3,7 +3,7 @@ import pygame as pg,sys,os,time # Needed to display image/time.
 
 def main():##!!!!!! Need to transmit data over socket in chunks.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-	s.connect(('',55556))
+	s.connect(('',55555))
 	#s.send('bg')
 	#bps=s.recv(4096)
 	#backgroundPic=pg.image.fromstring(bps[bps.index('QQQQQ')+5:],(int(bps[1:bps.index(',')]),int(bps[bps.index(' ')+1:bps.index(')')])),"RGBA")
