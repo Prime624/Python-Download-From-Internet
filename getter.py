@@ -15,7 +15,7 @@ print 'Images downloaded successfully!'
 
 #Sets up socket(server) and listens/accepts 1 client.
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-s.bind(('',55556))
+s.bind(('',55555))
 s.listen(1)
 conn,addr=s.accept()
 while 1:

@@ -2,7 +2,7 @@ import socket,pickle # Needed to recieve image
 import pygame as pg,sys,os,time # Needed to display image.
 
 s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-s.connect(('',55556))
+s.connect(('',55555))
 #s.send('bg')
 #backgroundPic=s.recv(1024)
 s.send('pointer')
