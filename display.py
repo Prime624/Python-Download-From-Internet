@@ -19,8 +19,8 @@ def main():##!!!!!! Need to transmit data over socket in chunks.
 	mouseP=(0,0)
 	point=(5000,5000)
 	seconds=False
-	window = pg.display.set_mode((backgroundPic.get_rect().size[0],backgroundPic.get_rect().size[1]))
-	#window = pg.display.set_mode((500,500))#DELETE_ME
+	#window = pg.display.set_mode((backgroundPic.get_rect().size[0],backgroundPic.get_rect().size[1]))
+	window = pg.display.set_mode((500,500))#DELETE_ME
 	while 1:
 		#window.blit(backgroundPic,(0,0))
 		window.blit(pointerPic,mouseP)
