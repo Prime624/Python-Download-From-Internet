@@ -3,31 +3,16 @@ from cStringIO import StringIO # Needed to load image data into buffer.
 import pygame as pg,sys,os,time # Needed to display image/time.
 
 def main():
-	#Sets up socket.
+	# Sets up socket.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	connect_to_valid_server(s)
 	
-	#Requests first picture.
-	s.send('bg')
-	#Records number of parts to this picture.
-	num_of_parts=int(s.recv(1024))
-	bps=""
-	#Requests and recieves each part.
-	for i in range(0,num_of_parts):
-		s.send("0")
-		bps+=s.recv(4096)
-	#Decodes image data from assemblage of data. (The first part is the image data, the middle part is the size.)
-	backgroundPic=pg.image.load(StringIO(bps))
-	#Repeats process for next image.
-	s.send('pointer')
-	num_of_parts=int(s.recv(1024))
-	ps=""
-	for i in range(0,num_of_parts):
-		s.send("hello")
-		ps+=s.recv(4096)
-	pointerPic=pg.image.load(StringIO(ps))
+	# Requests and receives images.
+	backgroundPic=request_and_recv_image(s,'bg')
+	pointerPic=request_and_recv_image(s,'pointer')
 	s.close()
-	#Sets up pygame and displays image/time.
+	
+	# Sets up pygame and displays image/time.
 	pg.init()
 	pg.mouse.set_visible(False)
 	fpsClock = pg.time.Clock()
@@ -70,6 +55,34 @@ def connect_to_valid_server(s,port=55550):# Connects to first open server in ran
 			s.close()
 			print 'Could not find server. Closing application.'
 			sys.exit()
+
+def request_and_recv_image(s,image_str):
+	# Requests picture from server.
+	s.send(image_str)
+	# Records number of parts and size of last part.
+	info=s.recv(1024).split(" ")
+	num_of_parts=int(info[0])
+	size_of_last_part=int(info[1])
+	# Requests and recieves each part.
+	pic_data=""
+	for i in range(0,num_of_parts):
+		s.send(str(i))
+		# Each part is only 4080 bytes instead of 4096 so that the client can detect whether extra information was sent or not.
+		part_data=s.recv(4096)
+		# If this is not the last part, then there should be 4080 bytes recieved (because it is in ASCII encoding, 1 letter == 1 byte so using the len() method has the same effect as checking the number of bytes).
+		if i<num_of_parts-1:
+			while len(part_data)!=4080:
+				s.send(str(i))
+				part_data=s.recv(4096)
+		else:# If this is the last part, then the amount of data should be equal to the specified amount recieved earlier. If not, ask for new information to be sent. When it is good, tell the server that the image has been correctly received.
+			while len(part_data)!=size_of_last_part:
+				s.send(str(i))
+				part_data=s.recv(4096)
+			s.send(' ')
+		# Adds this piece of data to the collection.
+		pic_data+=part_data
+	# Decodes image data from assemblage of data.
+	return pg.image.load(StringIO(pic_data))
 
 if __name__=='__main__':
 	main()
