@@ -18,7 +18,7 @@ def main():
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	procs=[]
 	# Starts thread that accepts new clients.
-	accept_proc=mp.Process(target=connect_to_open_port_and_accept_clients,args=(s,procs,bg,pointer,lsi,))
+	accept_proc=mp.Process(target=connect_to_open_port_and_accept_clients,args=(s,procs,bg,pointer,lsi,limit=2,))
 	accept_proc.start()
 	# Keeps application from closing if there are any running processes, or if no clients have yet been serviced.
 	still_going=True
