@@ -23,26 +23,21 @@ def main():
 	
 	# Sets up socket(server) and listens/accepts 1 client.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-	connect_to_open_port(s)
-	clients=2
-	s.listen(clients)
-	conns=[]
 	procs=[]
-	for i in range(0,clients):
-		conn,addr=s.accept()
-		conns.append(conn)
-		procs.append(mp.Process(target=start_service,args=(conn,bg[i],pointer[i],lsi[i],)))
-		procs[i].start()
+	accept_proc=mp.Process(target=connect_to_open_port_and_accept_clients,args=(s,procs,bg,pointer,lsi,))
+	#accept_proc.daemon=True
+	accept_proc.start()
 	still_going=True
 	while still_going:
-		still_going=False
-		for i in range(0,clients):
+		still_going=len(procs)==0
+		for i in range(0,len(procs)):
 			still_going=procs[i].is_alive() or still_going
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
-def connect_to_open_port(s,port=55550):# Connects to first open socket in range from 55550 to 55559.
-	try:#							If none of those sockets are available, then quits application.
+def connect_to_open_port_and_accept_clients(s,procs,bg,pointer,lsi,limit=100,port=55550):
+	# Connects to first open socket in range from 55550 to 55559.
+	try:# If none of those sockets are available, then quits application.
 		s.bind(('',port))
 		print 'Connected to port {}.'.format(port)
 	except socket.error:
@@ -53,6 +48,15 @@ def connect_to_open_port(s,port=55550):# Connects to first open socket in range 
 			s.close()
 			print 'Could not find open port. Closing application.'
 			sys.exit()
+	current_client=0
+	while 1:
+		s.listen(1)
+		conn,addr=s.accept()
+		procs.append(mp.Process(target=start_service,args=(conn,bg[current_client],pointer[current_client],lsi[current_client],)))
+		procs[current_client].start()
+		current_client+=1
+		if current_client>limit-2:
+			break
 
 def start_service(conn,bg,pointer,largeSampleImage):
 	while 1:
