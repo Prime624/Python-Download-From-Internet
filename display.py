@@ -12,7 +12,7 @@ def main():
 	backgroundPic=request_and_recv_image(s,'bg')
 	print 'Getting pointer image...'
 	pointerPic=request_and_recv_image(s,'pointer')
-	if 0:# To test with a large image (2048x2048)
+	if 1:# To test with a large image (2048x2048)
 		print 'Getting large sample image...'
 		largeI=request_and_recv_image(s,'large')
 	s.shutdown(socket.SHUT_RDWR)
@@ -29,6 +29,7 @@ def main():
 	seconds=False
 	window = pg.display.set_mode((backgroundPic.get_rect().size[0],backgroundPic.get_rect().size[1]))
 	while 1:
+		window.fill(pg.Color(255,255,255))
 		window.blit(backgroundPic,(0,0))
 		window.blit(pointerPic,mouseP)
 		if seconds:
@@ -71,14 +72,11 @@ def request_and_recv_image(s,image_str):
 	# Sends signal to server telling it that it's ready to recv data.
 	s.send(' ')
 	data=''
-	count=0# DELETE_ME
 	# Keep recving data until it is the specified length, adding it to the rest of the data each time.
 	while len(data)<lenData:
-		count+=1 #DELETE_ME
 		tmpData=s.recv(lenData-len(data))
 		data+=tmpData
 	# Forms image from data.
-	print count# DELETE_ME
 	return pg.image.load(StringIO(data))
 
 if __name__=='__main__':
