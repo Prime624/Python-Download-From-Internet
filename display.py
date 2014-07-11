@@ -8,9 +8,16 @@ def main():
 	connect_to_valid_server(s)
 	
 	# Requests and receives images.
+	print 'Getting background image...'
 	backgroundPic=request_and_recv_image(s,'bg')
+	print 'Getting pointer image...'
 	pointerPic=request_and_recv_image(s,'pointer')
+	if 1:# To test with a large image (2048x2048)
+		print 'Getting large sample image...'
+		largeI=request_and_recv_image(s,'large')
+	s.shutdown(socket.SHUT_RDWR)
 	s.close()
+	print 'Launching application...'
 	
 	# Sets up pygame and displays image/time.
 	pg.init()
@@ -57,32 +64,22 @@ def connect_to_valid_server(s,port=55550):# Connects to first open server in ran
 			sys.exit()
 
 def request_and_recv_image(s,image_str):
-	# Requests picture from server.
+	# Requests image from server.
 	s.send(image_str)
-	# Records number of parts and size of last part.
-	info=s.recv(1024).split(" ")
-	num_of_parts=int(info[0])
-	size_of_last_part=int(info[1])
-	# Requests and recieves each part.
-	pic_data=""
-	for i in range(0,num_of_parts):
-		s.send(str(i))
-		# Each part is only 4080 bytes instead of 4096 so that the client can detect whether extra information was sent or not.
-		part_data=s.recv(4096)
-		# If this is not the last part, then there should be 4080 bytes recieved (because it is in ASCII encoding, 1 letter == 1 byte so using the len() method has the same effect as checking the number of bytes).
-		if i<num_of_parts-1:
-			while len(part_data)!=4080:
-				s.send(str(i))
-				part_data=s.recv(4096)
-		else:# If this is the last part, then the amount of data should be equal to the specified amount recieved earlier. If not, ask for new information to be sent. When it is good, tell the server that the image has been correctly received.
-			while len(part_data)!=size_of_last_part:
-				s.send(str(i))
-				part_data=s.recv(4096)
-			s.send(' ')
-		# Adds this piece of data to the collection.
-		pic_data+=part_data
-	# Decodes image data from assemblage of data.
-	return pg.image.load(StringIO(pic_data))
+	# Records the amount of data being sent.
+	lenData=int(s.recv(1024))
+	# Sends signal to server telling it that it's ready to recv data.
+	s.send(' ')
+	data=''
+	count=0# DELETE_ME
+	# Keep recving data until it is the specified length, adding it to the rest of the data each time.
+	while len(data)<lenData:
+		count+=1 #DELETE_ME
+		tmpData=s.recv(lenData-len(data))
+		data+=tmpData
+	# Forms image from data.
+	print count# DELETE_ME
+	return pg.image.load(StringIO(data))
 
 if __name__=='__main__':
 	main()
