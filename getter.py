@@ -1,6 +1,5 @@
 import urllib as ul # Needed to download image from internet.
 import pygame as pg,socket,sys # Needed to send image to display.
-from cStringIO import StringIO # Needed to load image data into buffer.
 
 def main():
 	print 'Downloading images...'
