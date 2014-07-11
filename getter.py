@@ -3,35 +3,30 @@ import pygame as pg,socket,sys # Needed to send image to display.
 import multiprocessing as mp # For multi-threading.
 
 def main():
-	# Downloads images.
-	print 'Downloading background images...'
+	# Sets image urls for use when requested.
 	bg=[]
-	bg.append(ul.urlopen('https://www.dropbox.com/s/2iz8c2f5pbdrh6d/aaa.png?dl=1'))
-	bg.append(ul.urlopen('https://www.dropbox.com/s/tz8yk7h6chnzi9o/pyGame.png?dl=1'))
-	
-	print 'Downloading pointer images...'
+	bg.append('https://www.dropbox.com/s/2iz8c2f5pbdrh6d/aaa.png?dl=1')
+	bg.append('https://www.dropbox.com/s/tz8yk7h6chnzi9o/pyGame.png?dl=1')
 	pointer=[]
-	pointer.append(ul.urlopen('https://www.dropbox.com/s/z4w5sgaueirxpsa/bbb.png?dl=1'))
-	pointer.append(ul.urlopen('https://www.dropbox.com/s/wxxqhwwkmn6o15b/mouseTwo.png?dl=1'))
+	pointer.append('https://www.dropbox.com/s/z4w5sgaueirxpsa/bbb.png?dl=1')
+	pointer.append('https://www.dropbox.com/s/wxxqhwwkmn6o15b/mouseTwo.png?dl=1')
+	lsi=[]
+	lsi.append('http://scienceblogs.com/startswithabang/files/2012/12/globe_west_2048.jpeg')
+	lsi.append('http://scienceblogs.com/startswithabang/files/2012/12/globe_west_2048.jpeg')
 	
-	print 'Downloading sample large image...'
-	lsi=[] # Same image downloaded twice, because each image is destroyed when it is read.
-	lsi.append(ul.urlopen('http://scienceblogs.com/startswithabang/files/2012/12/globe_west_2048.jpeg'))
-	lsi.append(ul.urlopen('http://scienceblogs.com/startswithabang/files/2012/12/globe_west_2048.jpeg'))
-	
-	print 'Images downloaded successfully!'
-	
-	# Sets up socket(server) and listens/accepts 1 client.
+	# Sets up socket.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	procs=[]
+	# Starts thread that accepts new clients.
 	accept_proc=mp.Process(target=connect_to_open_port_and_accept_clients,args=(s,procs,bg,pointer,lsi,))
-	#accept_proc.daemon=True
 	accept_proc.start()
+	# Keeps application from closing if there are any running processes, or if no clients have yet been serviced.
 	still_going=True
 	while still_going:
 		still_going=len(procs)==0
 		for i in range(0,len(procs)):
 			still_going=procs[i].is_alive() or still_going
+	# Closes socket when done. Will only get here if client limit is reached.
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
@@ -50,8 +45,10 @@ def connect_to_open_port_and_accept_clients(s,procs,bg,pointer,lsi,limit=100,por
 			sys.exit()
 	current_client=0
 	while 1:
+		# Listens for and accepts next client.
 		s.listen(1)
 		conn,addr=s.accept()
+		# Starts process to service client.
 		procs.append(mp.Process(target=start_service,args=(conn,bg[current_client],pointer[current_client],lsi[current_client],)))
 		procs[current_client].start()
 		current_client+=1
@@ -64,14 +61,14 @@ def start_service(conn,bg,pointer,largeSampleImage):
 		data=conn.recv(1024)
 		if not data: break
 		if data:
-			# Puts image data into format readable by the client.
+			# Downloads image and puts image data into format readable by the client.
 			print 'Responding to request "{}"...'.format(data)
 			if data=='pointer':
-				sendable=pointer.read()
+				sendable=ul.urlopen(pointer).read()
 			elif data=='bg':
-				sendable=bg.read()
+				sendable=ul.urlopen(bg).read()
 			elif data=='large':
-				sendable=largeSampleImage.read()
+				sendable=ul.urlopen(largeSampleImage).read()
 			# Sends image data.
 			send_image_data(conn,sendable)
 
