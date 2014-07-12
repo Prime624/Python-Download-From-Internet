@@ -1,6 +1,7 @@
 import urllib as ul # Needed to download image from internet.
 import pygame as pg,socket,sys # Needed to send image to display.
-import multiprocessing as mp # For multi-threading.
+from threading import Thread # For multi-threading.
+from Queue import Queue # Also for multi-threading.
 
 def main():
 	# Sets image urls for use when requested.
@@ -16,21 +17,31 @@ def main():
 	
 	# Sets up socket.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+	# Queues are used when multi-threading to let threads communicate with eachother. q.put(object) adds an item to the end of the list and q.get() removes an item from the beginning of the list.
+	q=Queue()
 	procs=[]
 	# Starts thread that accepts new clients.
-	accept_proc=mp.Process(target=connect_to_open_port_and_accept_clients,args=(s,procs,bg,pointer,lsi,limit=2,))
+	limit=2
+	accept_proc=Thread(target=connect_to_open_port_and_accept_clients,args=(s,q,bg,pointer,lsi,limit,))
 	accept_proc.start()
-	# Keeps application from closing if there are any running processes, or if no clients have yet been serviced.
 	still_going=True
 	while still_going:
-		still_going=len(procs)==0
+		# Adds all new client-servicing threads to the list and starts them.
+		while not q.empty():
+			procs.append(q.get())
+			procs[len(procs)-1].start()
+		# The program should keep running if it is still accepting clients.
+		still_going = accept_proc.is_alive()
+		# The program should keep running if it is still servicing any client.
 		for i in range(0,len(procs)):
-			still_going=procs[i].is_alive() or still_going
+			still_going = still_going or procs[i].is_alive()
+		# The program checks one last time to make sure no clients were added to the queue when it wasn't looking.
+		still_going = still_going or not q.empty()
 	# Closes socket when done. Will only get here if client limit is reached.
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
-def connect_to_open_port_and_accept_clients(s,procs,bg,pointer,lsi,limit=100,port=55550):
+def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55550):
 	# Connects to first open socket in range from 55550 to 55559.
 	try:# If none of those sockets are available, then quits application.
 		s.bind(('',port))
@@ -48,11 +59,10 @@ def connect_to_open_port_and_accept_clients(s,procs,bg,pointer,lsi,limit=100,por
 		# Listens for and accepts next client.
 		s.listen(1)
 		conn,addr=s.accept()
-		# Starts process to service client.
-		procs.append(mp.Process(target=start_service,args=(conn,bg[current_client],pointer[current_client],lsi[current_client],)))
-		procs[current_client].start()
+		# Creates service client process and puts it into the queue.
+		q.put(Thread(target=start_service,args=(conn,bg[current_client],pointer[current_client],lsi[current_client],)))
 		current_client+=1
-		if current_client>limit-2:
+		if current_client>limit-1:
 			break
 
 def start_service(conn,bg,pointer,largeSampleImage):

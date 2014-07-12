@@ -12,7 +12,7 @@ def main():
 	backgroundPic=request_and_recv_image(s,'bg')
 	print 'Getting pointer image...'
 	pointerPic=request_and_recv_image(s,'pointer')
-	if 0:# To test with a large image (2048x2048)
+	if 0: # To test with a large image (2048x2048)
 		print 'Getting large sample image...'
 		largeI=request_and_recv_image(s,'large')
 	s.shutdown(socket.SHUT_RDWR)
