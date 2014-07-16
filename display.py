@@ -12,14 +12,16 @@ def main():
 	backgroundPic=request_and_recv_image(s,'bg')
 	print 'Getting pointer image...'
 	pointerPic=request_and_recv_image(s,'pointer')
-	if 0: # To test with a large image (2048x2048)
+	# To test with a large image (2048x2048)
+	if 0:
 		print 'Getting large sample image...'
 		largeI=request_and_recv_image(s,'large')
+	# Closes socket when done. Both steps are necessary to safely close down.
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 	print 'Launching application...'
 	
-	# Sets up pygame and displays image/time.
+	# Sets up pygame and displays image/time. Mostly self-explanatory.
 	pg.init()
 	pg.mouse.set_visible(False)
 	fpsClock = pg.time.Clock()
@@ -67,14 +69,14 @@ def connect_to_valid_server(s,port=55550,host=''):# Connects to first open serve
 def request_and_recv_image(s,image_str):
 	# Requests image from server.
 	s.send(image_str)
-	# Records the amount of data being sent.
-	lenData=int(s.recv(1024))
+	# Remembers the amount of data being sent.
+	length_actual_data=int(s.recv(1024))
+	data=''
 	# Sends signal to server telling it that it's ready to recv data.
 	s.send(' ')
-	data=''
-	# Keep recving data until it is the specified length, adding it to the rest of the data each time.
-	while len(data)<lenData:
-		tmpData=s.recv(lenData-len(data))
+	# Keeps recving data until it is the specified length, adding it to the rest of the data each time.
+	while len(data)<length_actual_data:
+		tmpData=s.recv(length_actual_data-len(data))
 		data+=tmpData
 	# Forms image from data.
 	return pg.image.load(StringIO(data))
