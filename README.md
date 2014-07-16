@@ -1,7 +1,5 @@
-Python Download From Internet
+Downloads and Socket Communication
 =============================
-Both versions download images from internet and display them using Pygame.
+standalone.py (WARNING: Uses many techniques that I now know are poor. Need to update.) - Demonstrates downloading multiple file types from the internet and using them with python.
 
-The standalone version (standalone.py) is self-contained.
-
-The Server-Client version requires both to be run. The server downloads the images and sends them to the client(s), which then displays them.
+getter.py and display.py - Server and client apps. The getter downloads images from the internet and sends them to the display(s) when they request them. There can be many displays connected to one server(getter), up to the limit(currently set at 15).
