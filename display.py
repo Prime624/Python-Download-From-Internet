@@ -52,10 +52,10 @@ def main():
 		pg.display.update()
 		fpsClock.tick(60)
 
-def connect_to_valid_server(s,port=55550):# Connects to first open server in range from 55550 to 55559.
+def connect_to_valid_server(s,port=55550,host=''):# Connects to first open server in range from 55550 to 55559.
 	try:#							If none of those servers are available, then quits application.
-		s.connect(('',port))
-		print 'Connected to server on port {}.'.format(port)
+		s.connect((host,port))
+		print 'Connected to server at host {} on port {}.'.format(host,port)
 	except socket.error:
 		if port<55560:
 			connect_to_valid_server(s,port+1)

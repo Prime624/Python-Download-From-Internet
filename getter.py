@@ -82,18 +82,19 @@ def main():
 			still_going = still_going or procs[i].is_alive()
 		# The program checks one last time to make sure no clients were added to the queue when it wasn't looking.
 		still_going = still_going or not q.empty()
-	# Closes socket when done. Will only get here if client limit is reached.
+	# Closes socket when done. Will only get here if client limit is reached and all clients are done being serviced.
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
-def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55550):
+def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55550,host=''):
 	# Connects to first open socket in range from 55550 to 55559.
 	try:# If none of those sockets are available, then quits application.
-		s.bind(('',port))
+		s.bind((host,port))
+		hhh= socket.gethostname()
 		print 'Connected to port {}.'.format(port)
 	except socket.error:
 		if port<55560:
-			connect_to_open_port(s,port+1)
+			connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit,port+1)
 		else:
 			s.shutdown(socket.SHUT_RDWR)
 			s.close()
@@ -104,6 +105,7 @@ def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55
 		# Listens for and accepts next client.
 		s.listen(1)
 		conn,addr=s.accept()
+		print 'Connected to client at {}'.format(addr)
 		# Creates service client process and puts it into the queue.
 		q.put(Thread(target=start_service,args=(conn,bg[current_client],pointer[current_client],lsi[current_client],)))
 		current_client+=1
