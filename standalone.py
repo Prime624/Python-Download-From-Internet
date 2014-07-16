@@ -1,43 +1,44 @@
 import urllib as ul,urllib2 as ul2 # Needed to download pages/files from internet.
 import json # Needed to convert JSON file to a Python Dict.
-import pygame as pg,sys,os,time # To display image.
+import pygame as pg,sys,time # To display image.
+from cStringIO import StringIO # To load image.
 
-#Downloads webpage/file from url. In this case, it is a sample text file.
+# Downloads webpage/file from url. In this case, it is a sample text file.
 response=ul2.urlopen('https://www.dropbox.com/s/6oo9gyaa880hmai/aaa.txt?dl=1')
 fyle=response.read()
-#Prints entire file.
+# Prints entire file.
 print fyle
 print ''
-#Separates the text file by line into a list of Strings.
+# Separates the text file by line into a list of Strings.
 lines=fyle.split("\n")
-#Prints out the fourth line.
+# Prints out the fourth line.
 print lines[3]
 print ''
 print ''
 print ''
 print ''
 
-#Downloads sample JSON (initially from Google Maps).
+# Downloads sample JSON (initially from Google Maps).
 response2=ul2.urlopen('https://www.dropbox.com/s/jrxgmvwuk3ujysy/aaa.json?dl=1')
-#Converts the JSON to a Python Dict.
+# Converts the JSON to a Python Dict.
 dec=json.load(response2)
-#Prints entire file.
+# Prints entire file.
 print dec
 print ''
-#Prints a specific property.
+# Prints a specific property.
 print dec["results"][0]["address_components"][2]["long_name"]
 
-#Downloads sample image to temporary location.
-response3=ul.urlretrieve('https://www.dropbox.com/s/2iz8c2f5pbdrh6d/aaa.png?dl=1','tmpImage.png')
-#Loads image into Pygame.
-image=pg.image.load('tmpImage.png')
-#Deletes temporary image.
-os.remove('tmpImage.png')
-#Repeat above steps for second image.
-response4=ul.urlretrieve('https://www.dropbox.com/s/z4w5sgaueirxpsa/bbb.png?dl=1','tmpImage2.png')
-image2=pg.image.load('tmpImage2.png')
-os.remove('tmpImage2.png')
-#Sets up pygame and displays image/time.
+# To download and save file to computer, use ul.urlopen('example.com/numberone.txt','folder/file.txt')
+# To delete said file, use os.remove('folder/file.txt')
+
+# Downloads sample image.
+response3=ul.urlopen('https://www.dropbox.com/s/2iz8c2f5pbdrh6d/aaa.png?dl=1')
+# Loads image into Pygame.
+image=pg.image.load(StringIO(response3.read()))
+# Repeat above steps for second image.
+response4=ul.urlopen('https://www.dropbox.com/s/z4w5sgaueirxpsa/bbb.png?dl=1')
+image2=pg.image.load(StringIO(response4.read()))
+# Sets up pygame and displays image/time.
 pg.init()
 pg.mouse.set_visible(False)
 fpsClock = pg.time.Clock()
