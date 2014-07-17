@@ -1,3 +1,4 @@
+import xml.etree.ElementTree as XML # Needed to get image urls from XML file.
 import urllib as ul # Needed to download image from internet.
 import pygame as pg,socket,sys # Needed to send image to display.
 from threading import Thread # For multi-threading.
@@ -5,20 +6,16 @@ from Queue import Queue # Also for multi-threading.
 
 def main():
 	# Sets image urls for use when requested.
+	url_file=XML.parse('urls.xml')
 	bg=[]
-	for i in range(0,4)
-		bg.append('https://www.dropbox.com/s/2iz8c2f5pbdrh6d/aaa.png?dl=1')
-		bg.append('https://www.dropbox.com/s/tz8yk7h6chnzi9o/pyGame.png?dl=1')
-		bg.append('https://www.dropbox.com/s/3o2chmyv3s5ffzy/back3.jpg?dl=1')
-		bg.append('https://www.dropbox.com/s/2qtq1u4i6f5nj43/back4.JPG?dl=1')
+	for child in url_file.getroot().find('backgrounds'):
+		bg.append(child.text)
 	pointer=[]
-	for i in range(0,5):
-		pointer.append('https://www.dropbox.com/s/z4w5sgaueirxpsa/bbb.png?dl=1')
-		pointer.append('https://www.dropbox.com/s/wxxqhwwkmn6o15b/mouseTwo.png?dl=1')
-		pointer.append('https://www.dropbox.com/s/l5fs8gewsrdell6/mou3.png?dl=1')
+	for child in url_file.getroot().find('pointers'):
+		pointer.append(child.text)
 	lsi=[]
-	for i in range(0,30):
-		lsi.append('http://scienceblogs.com/startswithabang/files/2012/12/globe_west_2048.jpeg')
+	for child in url_file.getroot().find('large'):
+		lsi.append(child.text)
 	
 	# Sets up socket.
 	s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -26,7 +23,7 @@ def main():
 	q=Queue()
 	procs=[]
 	# Starts thread that accepts new clients.
-	limit=15
+	limit=min(len(bg),len(pointer),len(lsi))
 	accept_proc=Thread(target=connect_to_open_port_and_accept_clients,args=(s,q,bg,pointer,lsi,limit,))
 	accept_proc.start()
 	still_going=True
