@@ -5,10 +5,12 @@ from threading import Thread # For multi-threading.
 from Queue import Queue # Also for multi-threading.
 
 def main():
-	# Sets image urls for use when requested.
+	# Imports xml file containing urls.
 	url_file=XML.parse('urls.xml')
 	bg=[]
+	# For every child in the 'backgrounds' child of the root...
 	for child in url_file.getroot().find('backgrounds'):
+		# ...add the text of the child to the list of urls.
 		bg.append(child.text)
 	pointer=[]
 	for child in url_file.getroot().find('pointers'):
@@ -22,8 +24,9 @@ def main():
 	# Queues are used when multi-threading to let threads communicate with eachother. q.put(object) adds an item to the end of the list and q.get() removes an item from the beginning of the list.
 	q=Queue()
 	procs=[]
-	# Starts thread that accepts new clients.
+	# Sets limit as the fewest number of links in any of the groups in the xml file, so that a link that doesn't exist is never requested.
 	limit=min(len(bg),len(pointer),len(lsi))
+	# Starts thread that accepts new clients.
 	accept_proc=Thread(target=connect_to_open_port_and_accept_clients,args=(s,q,bg,pointer,lsi,limit,))
 	accept_proc.start()
 	still_going=True
