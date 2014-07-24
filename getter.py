@@ -46,7 +46,8 @@ def main():
 	s.shutdown(socket.SHUT_RDWR)
 	s.close()
 
-def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55550,host=''):
+def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit,port=55550,host=''):
+	"""Documentation here"""
 	# Connects to first open socket in range from 55550 to 55559.
 	try:# If none of those sockets are available, then quits application.
 		s.bind((host,port))
@@ -61,7 +62,7 @@ def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55
 			print 'Could not find open port. Closing application.'
 			sys.exit()
 	current_client=0
-	while 1:
+	while True:
 		# Listens for and accepts next client.
 		s.listen(1)
 		conn,addr=s.accept()
@@ -73,21 +74,16 @@ def connect_to_open_port_and_accept_clients(s,q,bg,pointer,lsi,limit=100,port=55
 			break
 
 def start_service(conn,bg,pointer,largeSampleImage):
-	while 1:
+	images={'pointer':pointer,'bg':bg,'large':largeSampleImage}
+	data=conn.recv(1024)
+	while data:
+		# Downloads image and puts image data into format readable by the client.
+		print 'Responding to request "{}"...'.format(data)
+		sendable=ul.urlopen(images[data]).read()
+		# Sends image data.
+		send_image_data(conn,sendable)
 		# Listens for data.
 		data=conn.recv(1024)
-		if not data: break
-		if data:
-			# Downloads image and puts image data into format readable by the client.
-			print 'Responding to request "{}"...'.format(data)
-			if data=='pointer':
-				sendable=ul.urlopen(pointer).read()
-			elif data=='bg':
-				sendable=ul.urlopen(bg).read()
-			elif data=='large':
-				sendable=ul.urlopen(largeSampleImage).read()
-			# Sends image data.
-			send_image_data(conn,sendable)
 
 def send_image_data(conn,sendable):
 	# Tells client how much data will be sent.
